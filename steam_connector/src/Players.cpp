@@ -43,7 +43,6 @@ bool Players::sendPlayersRequest(const char* ip_address, int port){
 		}
 		recv(fd, response, sizeof_response, 0);
 		cout << "Received response to challenge..." <<endl;
-		//show_buffer(response, sizeof_response);
 		unsigned char modified_challenge[SIZE_CHALLENGE];
 		for (int i = 0; i < SIZE_CHALLENGE; i++){
 			modified_challenge[i] = CHALLENGE[i];
@@ -60,11 +59,9 @@ bool Players::sendPlayersRequest(const char* ip_address, int port){
 				close(fd);
 				return false;
 			}
-			//show_buffer(modified_challenge, sizeof(modified_challenge));
 			flushBuffer(response, sizeof_response);
 			packet_size = recv(fd, response, sizeof_response, 0);
 			cout << "Received response from the modified challenge..." << endl;
-			//show_buffer(response, packet_size);
 		}
 		close(fd);
 		storePlayersInfo(response, packet_size);
@@ -73,68 +70,73 @@ bool Players::sendPlayersRequest(const char* ip_address, int port){
 }
 
 void Players::flushBuffer(unsigned char * buffer, int sizeof_buffer){
-	for (int i = 0; i < sizeof_buffer; i++)
-		buffer[i] = 0x00;
+	unsigned char * b = buffer;
+	for (int i = 0; i < sizeof_buffer; i++){
+		*b = 0x00;
+		b++;
+	}
 }
 
 void Players::storePlayersInfo(unsigned char * buffer, int message_length){
-	int index_player = 0;
-	char player_name[128];
-	char *p_player = player_name;
-	long score = 0;
-	float duration = 0;
 	int i = 6;
-	cout << "Number of players : " << int(buffer[5]) <<endl;
-	while(i < message_length){
-		index_player = int(buffer[i]);
-		i++;
-		while(buffer[i] != 0x00){
-			*p_player = buffer[i];
-			p_player++;
+	l_Players L_Players_aux = L_Players;
+	L_Players_aux.num_players = int(buffer[5]);
+	if (L_Players_aux.num_players > 0){
+		L_Players_aux.players = new Player;
+		while(i < message_length){
+			L_Players_aux.players->player_id = (int)buffer[i];
 			i++;
-		}
-		*p_player = '\n';
-		p_player = player_name;
-		int shifting = -1;
-		for (int j = 1; j < 9; j++){
-			if (shifting < 0){
-				shifting = 24;
+			char * p_player = L_Players_aux.players->player_name;
+			while(buffer[i] != 0x00){
+				*p_player = buffer[i];
+				p_player++;
+				i++;
 			}
-			if (j < 4){
-				score += buffer[i + j] << shifting;
-				shifting -= 8;
+			*p_player = '\n';
+			int shifting = -1;
+			for (int j = 1; j < 9; j++){
+				if (shifting < 0){
+					shifting = 24;
+				}
+				if (j < 4){
+					L_Players_aux.players->player_score += buffer[i + j] << shifting;
+					shifting -= 8;
+				}
+				else{
+					L_Players_aux.players->player_duration += buffer[i + j] << shifting;
+					shifting -= 8;
+				}
 			}
-			else{
-				duration += buffer[i + j] << shifting;
-				shifting -= 8;
-			}
+			L_Players_aux.players->next_player = new Player;
+			L_Players_aux.players = L_Players_aux.players->next_player;
+			i = i + 9;
 		}
-		cout << "Index of the player : " << index_player << endl;
-		cout << "Player name : " ;
-		while (*p_player != '\n'){
-			cout << *p_player;
-			p_player++;
-		}
-		cout << endl;
-		cout << "Score of the player : " << score << endl;
-		cout << "Duration of the player in the server : " << duration << endl;
-		p_player = player_name;
-		i = i + 9;
 	}
-	L_Players.players = new Player;
-	L_Players.players->next_player = NULL;
-	L_Players.num_players++;
 }
 
 void Players::getVPlayers(Player * players){
 	players = this->V_Players;
 }
 
-void Players::Show_Players(){
+void Players::showPlayer(Player p){
+	cout << "ID of the player : " << p.player_id << endl;
+	cout << "Name of the player : " << p.player_name << endl;
+	cout << "Score of the player : " << p.player_score << endl;
+	cout << "Log time on server of the player : " << p.player_duration << endl;
+}
 
+void Players::showPlayers(){
+	Player * p = L_Players.players;
+	for(int i = 0; i < this->L_Players.num_players; i++){
+		showPlayer(*p);
+		p++;
+	}
 }
 
 Players::~Players() {
 	// TODO Auto-generated destructor stub
+	delete[] L_Players.players;
+	L_Players.players = NULL;
+	L_Players.num_players = 0;
 }
 

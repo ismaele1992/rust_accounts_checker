@@ -20,10 +20,10 @@ const int MAX_PLAYERS = 500;
 const int SIZE_CHALLENGE = 9;
 typedef struct player{
 	int player_id;
-	char * player_name[128];
+	char player_name[128];
 	long player_score;
 	float player_duration;
-	player * next_player;
+	player * next_player = NULL;
 } Player;
 
 class Players {
@@ -42,7 +42,8 @@ public:
 	void storePlayersInfo(unsigned char * buffer, int message_length);
 	void flushBuffer(unsigned char * buffer, int sizeof_buffer);
 	void getVPlayers(Player * players);
-	void Show_Players();
+	void showPlayer(Player player);
+	void showPlayers();
 	virtual ~Players();
 };
 
