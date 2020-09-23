@@ -4,12 +4,18 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/Players.cpp \
+../src/Servers.cpp \
 ../src/steam_connector.cpp 
 
 OBJS += \
+./src/Players.o \
+./src/Servers.o \
 ./src/steam_connector.o 
 
 CPP_DEPS += \
+./src/Players.d \
+./src/Servers.d \
 ./src/steam_connector.d 
 
 
