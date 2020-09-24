@@ -77,38 +77,62 @@ void Players::flushBuffer(unsigned char * buffer, int sizeof_buffer){
 	}
 }
 
+Player* Players::storePlayerInfo(int player_id, char * player_name, long player_score, float player_duration){
+
+	Player * p = new Player;
+	p -> player_id = player_id;
+	int i = 0;
+	while(player_name[i] != '\n'){
+		p -> player_name[i] = player_name[i];
+		i++;
+	}
+	p -> player_duration = player_duration;
+	p -> next_player = NULL;
+	if (L_Players.players == NULL){
+		L_Players.players = p;
+	}
+	else{
+		Player * p_aux = L_Players.players;
+		while(p_aux->next_player != NULL){
+			p_aux = p_aux->next_player;
+		}
+		p_aux->next_player = p;
+	}
+	return L_Players.players;
+}
+
 void Players::storePlayersInfo(unsigned char * buffer, int message_length){
 	int i = 6;
-	l_Players L_Players_aux = L_Players;
-	L_Players_aux.num_players = int(buffer[5]);
-	if (L_Players_aux.num_players > 0){
-		L_Players_aux.players = new Player;
+	L_Players.num_players = int(buffer[5]);
+	if (L_Players.num_players > 0){
 		while(i < message_length){
-			L_Players_aux.players->player_id = (int)buffer[i];
+			int player_id = (int)buffer[i];
 			i++;
-			char * p_player = L_Players_aux.players->player_name;
+			char player_name[128];
+			char * p_player = player_name;
 			while(buffer[i] != 0x00){
 				*p_player = buffer[i];
 				p_player++;
 				i++;
 			}
 			*p_player = '\n';
+			long score = 0;
+			float duration = 0;
 			int shifting = -1;
 			for (int j = 1; j < 9; j++){
 				if (shifting < 0){
 					shifting = 24;
 				}
 				if (j < 4){
-					L_Players_aux.players->player_score += buffer[i + j] << shifting;
+					score += buffer[i + j] << shifting;
 					shifting -= 8;
 				}
 				else{
-					L_Players_aux.players->player_duration += buffer[i + j] << shifting;
+					duration += buffer[i + j] << shifting;
 					shifting -= 8;
 				}
 			}
-			L_Players_aux.players->next_player = new Player;
-			L_Players_aux.players = L_Players_aux.players->next_player;
+			storePlayerInfo(player_id, player_name, duration, score);
 			i = i + 9;
 		}
 	}
@@ -123,19 +147,32 @@ void Players::showPlayer(Player p){
 	cout << "Name of the player : " << p.player_name << endl;
 	cout << "Score of the player : " << p.player_score << endl;
 	cout << "Log time on server of the player : " << p.player_duration << endl;
+	cout << endl;
 }
 
 void Players::showPlayers(){
 	Player * p = L_Players.players;
+	cout << "First iteration ..." << endl;
 	for(int i = 0; i < this->L_Players.num_players; i++){
 		showPlayer(*p);
-		p++;
+		p = p->next_player;
+	}
+	p = L_Players.players;
+	cout << "Second iteration ..." << endl;
+	while(p != NULL){
+		showPlayer(*p);
+		p = p->next_player;
 	}
 }
 
 Players::~Players() {
 	// TODO Auto-generated destructor stub
-	delete[] L_Players.players;
+	Player * aux = L_Players.players;
+	while(aux != 0){
+		Player * next = aux -> next_player;
+		delete aux;
+		aux = next;
+	}
 	L_Players.players = NULL;
 	L_Players.num_players = 0;
 }

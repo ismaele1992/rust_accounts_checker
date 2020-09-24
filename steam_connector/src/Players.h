@@ -39,6 +39,7 @@ public:
 	int getNumberPlayers();
 	void setNumberPlayers(int numberPlayers);
 	bool sendPlayersRequest(const char* ip_address, int port);
+	Player* storePlayerInfo(int player_id, char * player_name, long player_score, float player_duration);
 	void storePlayersInfo(unsigned char * buffer, int message_length);
 	void flushBuffer(unsigned char * buffer, int sizeof_buffer);
 	void getVPlayers(Player * players);
