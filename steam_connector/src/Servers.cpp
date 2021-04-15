@@ -9,26 +9,15 @@
 
 Servers::Servers() {
 	// TODO Auto-generated constructor stub
-	L_Servers.num_servers = 0;
-	L_Servers.servers = NULL;
+	this->l_servers.clear();
 }
 
 void Servers::storeServer(char * server_name, char * server_ip, int server_port) {
-	Server * s = new Server;
-	strcpy(s->server_name, server_name);
-	strcpy(s->server_ip, server_ip);
-	s->server_port = server_port;
-	s->next_server = NULL;
-	if (L_Servers.servers == NULL){
-		L_Servers.servers = s;
-	}
-	else{
-		Server * aux = L_Servers.servers;
-		while(aux->next_server != NULL){
-			aux = aux->next_server;
-		}
-		aux -> next_server = s;
-	}
+	Server s;
+	strcpy(s.server_name, server_name);
+	strcpy(s.server_ip, server_ip);
+	s.server_port = server_port;
+	this->l_servers.push_back(s);
 }
 
 void Servers::storeServers(unsigned char *buffer, int buffer_size) {
@@ -42,15 +31,13 @@ void Servers::showServer(Server s) {
 }
 
 void Servers::showServers() {
-	Server * s = L_Servers.servers;
-	while(s->next_server != NULL){
-		showServer(*s);
-		s = s->next_server;
+	for(auto s = this->l_servers.begin(); s!=this->l_servers.end(); ++s){
+		this->showServer(*s);
 	}
 }
 
-l_Servers Servers::getServers() {
-	return L_Servers;
+list<Server> Servers::getServers() {
+	return this->l_servers;
 }
 
 void Servers::setServerInfo() {
@@ -58,13 +45,6 @@ void Servers::setServerInfo() {
 
 Servers::~Servers() {
 	// TODO Auto-generated destructor stub
-	Server * aux = L_Servers.servers;
-	while(aux != 0){
-		Server * aux_next = aux->next_server;
-		delete aux;
-		aux = aux_next;
-	}
-	L_Servers.servers = NULL;
-	L_Servers.num_servers = 0;
+	this->l_servers.clear();
 }
 

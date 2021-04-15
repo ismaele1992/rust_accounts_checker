@@ -9,8 +9,8 @@
 
 Players::Players() {
 	// TODO Auto-generated constructor stub
-	L_Players.players = NULL;
-	L_Players.num_players = 0;
+	this->l_players.clear();
+	this->number_players = 0;
 }
 
 int Players::getNumberPlayers(){
@@ -77,34 +77,25 @@ void Players::flushBuffer(unsigned char * buffer, int sizeof_buffer){
 	}
 }
 
-Player* Players::storePlayerInfo(int player_id, char * player_name, long player_score, float player_duration){
+void Players::storePlayerInfo(int player_id, char * player_name, long player_score, float player_duration){
 
-	Player * p = new Player;
-	p -> player_id = player_id;
-	int i = 0;
-	while(player_name[i] != '\n'){
-		p -> player_name[i] = player_name[i];
-		i++;
-	}
-	p -> player_duration = player_duration;
-	p -> next_player = NULL;
-	if (L_Players.players == NULL){
-		L_Players.players = p;
-	}
-	else{
-		Player * p_aux = L_Players.players;
-		while(p_aux->next_player != NULL){
-			p_aux = p_aux->next_player;
-		}
-		p_aux->next_player = p;
-	}
-	return L_Players.players;
+	Player p;
+	p.player_id = player_id;
+	p.player_name = new char[128];
+	p.player_score = player_score;
+	strcpy(p.player_name, player_name);
+	p.player_duration = player_duration;
+	this->l_players.push_back(p);
 }
 
 void Players::storePlayersInfo(unsigned char * buffer, int message_length){
+	const char * ip_address;
+	int port = 0;
+	unsigned char * buffer;
+	buffer = SteamAPI::QueryPlayers(ip_address, port, 0);
 	int i = 6;
-	L_Players.num_players = int(buffer[5]);
-	if (L_Players.num_players > 0){
+	this->number_players = int(buffer[5]);
+	if (this->number_players > 0){
 		while(i < message_length){
 			int player_id = (int)buffer[i];
 			i++;
@@ -138,10 +129,6 @@ void Players::storePlayersInfo(unsigned char * buffer, int message_length){
 	}
 }
 
-void Players::getVPlayers(Player * players){
-	players = this->V_Players;
-}
-
 void Players::showPlayer(Player p){
 	cout << "ID of the player : " << p.player_id << endl;
 	cout << "Name of the player : " << p.player_name << endl;
@@ -151,29 +138,17 @@ void Players::showPlayer(Player p){
 }
 
 void Players::showPlayers(){
-	Player * p = L_Players.players;
-	cout << "First iteration ..." << endl;
-	for(int i = 0; i < this->L_Players.num_players; i++){
-		showPlayer(*p);
-		p = p->next_player;
-	}
-	p = L_Players.players;
-	cout << "Second iteration ..." << endl;
-	while(p != NULL){
-		showPlayer(*p);
-		p = p->next_player;
+	for(auto p = this->l_players.begin(); p != l_players.end(); ++p){
+		this->showPlayer(*p);
 	}
 }
 
 Players::~Players() {
 	// TODO Auto-generated destructor stub
-	Player * aux = L_Players.players;
-	while(aux != 0){
-		Player * next = aux -> next_player;
-		delete aux;
-		aux = next;
+	for(auto p = this->l_players.begin(); p != this->l_players.end(); ++p){
+		delete[] p->player_name;
 	}
-	L_Players.players = NULL;
-	L_Players.num_players = 0;
+	this->l_players.clear();
+	this->number_players = 0;
 }
 
