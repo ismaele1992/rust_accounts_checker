@@ -91,8 +91,8 @@ void Players::storePlayerInfo(int player_id, char * player_name, long player_sco
 void Players::storePlayersInfo(unsigned char * buffer, int message_length){
 	const char * ip_address;
 	int port = 0;
-	unsigned char * buffer;
-	buffer = SteamAPI::QueryPlayers(ip_address, port, 0);
+	//unsigned char * buffer;
+	//buffer = SteamAPI::QueryPlayers(ip_address, port, 0);
 	int i = 6;
 	this->number_players = int(buffer[5]);
 	if (this->number_players > 0){

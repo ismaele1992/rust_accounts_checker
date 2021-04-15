@@ -29,7 +29,7 @@ unsigned char* SteamAPI::QueryPlayers(const char *ip_address, int port, int & pa
 		if (sendto(fd, CHALLENGE, SIZE_CHALLENGE, 0, (sockaddr*)&serveraddr, sizeof(serveraddr)) < 0){
 			perror("Cannot send UDP message");
 			close(fd);
-			return false;
+			return NULL;
 		}
 		recv(fd, response, sizeof_response, 0);
 		cout << "Received response to challenge..." <<endl;
@@ -47,7 +47,7 @@ unsigned char* SteamAPI::QueryPlayers(const char *ip_address, int port, int & pa
 			if (sendto(fd, modified_challenge, sizeof(modified_challenge), 0, (sockaddr*)&serveraddr, sizeof(serveraddr)) < 0){
 				perror("Cannot send UDP message");
 				close(fd);
-				return false;
+				return NULL;
 			}
 			flushBuffer(response, sizeof_response);
 			packet_size = recv(fd, response, sizeof_response, 0);

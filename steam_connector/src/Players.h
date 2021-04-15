@@ -16,7 +16,6 @@ using namespace std;
 #define PLAYERS_H_
 
 const int MAX_PLAYERS = 500;
-const int SIZE_CHALLENGE = 9;
 typedef struct player{
 	int player_id;
 	char * player_name;
